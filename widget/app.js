@@ -254,7 +254,13 @@ regionInput.addEventListener('input', () => {
 
   const allRegions = Object.keys(regionToFO).sort((a, b) => a.localeCompare(b, 'ru'));
   const matches = allRegions
-    .filter(r => r.toLowerCase().includes(q) && !selectedRegions.has(r))
+    .filter(r => {
+      if (!r.toLowerCase().includes(q)) return false;
+      if (selectedRegions.has(r)) return false;
+      // если выбраны ФО — показываем только регионы из этих ФО
+      if (selectedFOs.size > 0 && !selectedFOs.has(regionToFO[r])) return false;
+      return true;
+    })
     .slice(0, 25);
 
   regionDropdown.innerHTML = matches.length
@@ -288,7 +294,14 @@ cityInput.addEventListener('input', () => {
     .concat(citiesDB.filter(c =>
       !c.city.toLowerCase().startsWith(q) && c.city.toLowerCase().includes(q)
     ))
-    .filter(c => !selectedCities.has(c.city))
+    .filter(c => {
+      if (selectedCities.has(c.city)) return false;
+      // если выбраны ФО — только города из этих ФО
+      if (selectedFOs.size > 0 && !selectedFOs.has(c.district)) return false;
+      // если выбраны регионы — только города из этих регионов
+      if (selectedRegions.size > 0 && !selectedRegions.has(c.region)) return false;
+      return true;
+    })
     .slice(0, 30);
 
   cityDropdown.innerHTML = matches.length
