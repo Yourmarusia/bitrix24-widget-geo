@@ -253,15 +253,17 @@ regionInput.addEventListener('input', () => {
   if (q.length < 1) { regionDropdown.style.display = 'none'; return; }
 
   const allRegions = Object.keys(regionToFO).sort((a, b) => a.localeCompare(b, 'ru'));
-  const matches = allRegions
-    .filter(r => {
-      if (!r.toLowerCase().includes(q)) return false;
-      if (selectedRegions.has(r)) return false;
-      // если выбраны ФО — показываем только регионы из этих ФО
-      if (selectedFOs.size > 0 && !selectedFOs.has(regionToFO[r])) return false;
-      return true;
-    })
-    .slice(0, 25);
+  const filterRegion = r => {
+    if (!r.toLowerCase().includes(q)) return false;
+    if (selectedRegions.has(r)) return false;
+    if (selectedFOs.size > 0 && !selectedFOs.has(regionToFO[r])) return false;
+    return true;
+  };
+  // Сначала те, что начинаются с введённых букв, потом остальные
+  const matches = [
+    ...allRegions.filter(r => filterRegion(r) && r.toLowerCase().startsWith(q)),
+    ...allRegions.filter(r => filterRegion(r) && !r.toLowerCase().startsWith(q)),
+  ].slice(0, 25);
 
   regionDropdown.innerHTML = matches.length
     ? matches.map(r => `
