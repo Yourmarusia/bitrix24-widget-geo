@@ -1,0 +1,11 @@
+services:
+  geo-widget:
+    build: .
+    container_name: geo-widget
+    restart: always
+    networks:
+      - caddy-net
+
+networks:
+  caddy-net:
+    external: true

@@ -169,7 +169,8 @@
   </style>
 </head>
 <body>
-<div class="container">
+<div id="loading" style="padding:20px;color:#888;font-size:14px;">⏳ Загрузка виджета...</div>
+<div class="container" id="mainContent" style="display:none;">
 
   <!-- БЛОК: Федеральный округ -->
   <div class="section">
@@ -209,6 +210,7 @@
   <div class="status" id="status"></div>
 
 </div>
+<div id="errorMsg" style="display:none;padding:20px;color:#e74c3c;font-size:13px;"></div>
 <script src="//api.bitrix24.com/api/v1/"></script>
 <script src="app.js"></script>
 </body>

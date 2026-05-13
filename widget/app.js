@@ -28,7 +28,28 @@ const cityTagsEl     = document.getElementById('cityTags');
 const saveBtn        = document.getElementById('saveBtn');
 const statusEl       = document.getElementById('status');
 
+// ─── Вспомогательные элементы ─────────────────────────────────────────────
+const loadingEl  = document.getElementById('loading');
+const mainEl     = document.getElementById('mainContent');
+const errorMsgEl = document.getElementById('errorMsg');
+
+function showMain() {
+  loadingEl.style.display  = 'none';
+  mainEl.style.display     = 'block';
+}
+
+function showError(msg) {
+  loadingEl.style.display  = 'none';
+  errorMsgEl.style.display = 'block';
+  errorMsgEl.textContent   = '❌ ' + msg;
+  console.error(msg);
+}
+
 // ─── Инициализация через BX24 ─────────────────────────────────────────────
+if (typeof BX24 === 'undefined') {
+  showError('BX24.js не загружен. Виджет должен открываться внутри Битрикс24.');
+} else {
+
 BX24.init(function () {
 
   // Получаем ID текущей сделки
@@ -51,15 +72,18 @@ BX24.init(function () {
       });
 
       renderFOButtons();
+      showMain();
 
       // Загружаем уже сохранённые значения из сделки
       if (currentDealId) {
         loadExistingValues();
       }
     })
-    .catch(() => showStatus('Не удалось загрузить базу городов', true));
+    .catch(err => showError('Не удалось загрузить базу городов: ' + err.message));
 
-});
+}); // BX24.init
+
+} // typeof BX24
 
 // ─── Загрузка текущих значений из сделки ─────────────────────────────────
 function loadExistingValues() {
