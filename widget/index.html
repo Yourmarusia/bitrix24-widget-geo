@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>География сделки</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    body { background: #f5f7fa; padding: 16px; }
+    .container { max-width: 640px; }
+
+    .section { margin-bottom: 20px; }
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 8px;
+    }
+
+    /* ФО — кнопки */
+    .fo-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .fo-btn {
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1.5px solid #c5cfe0;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .fo-btn:hover { border-color: #4a90e2; color: #4a90e2; }
+    .fo-btn.active { background: #4a90e2; border-color: #4a90e2; color: #fff; }
+
+    /* Теги выбранных значений */
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 28px;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 13px;
+    }
+    .tag.fo   { background: #e8f0fe; color: #1a5dc8; }
+    .tag.reg  { background: #e6f4ea; color: #1e7e34; }
+    .tag.city { background: #fff3e0; color: #b45309; }
+    .tag-remove { cursor: pointer; font-size: 15px; line-height: 1; opacity: 0.6; }
+    .tag-remove:hover { opacity: 1; }
+
+    /* Группировка регионов по ФО */
+    .region-groups { display: flex; flex-direction: column; gap: 10px; }
+    .region-group {}
+    .region-group-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .region-group-fo {
+      font-size: 11px;
+      font-weight: 700;
+      color: #1a5dc8;
+      background: #e8f0fe;
+      border-radius: 4px;
+      padding: 2px 7px;
+      letter-spacing: 0.4px;
+    }
+    .region-group-line {
+      flex: 1;
+      height: 1px;
+      background: #d8e4f5;
+    }
+    .region-group-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    /* Поиск регионов и городов */
+    .search-wrapper { position: relative; }
+    .search-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1.5px solid #c5cfe0;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fff;
+    }
+    .search-input:focus { border-color: #4a90e2; box-shadow: 0 0 0 3px rgba(74,144,226,0.12); }
+
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 2px);
+      left: 0; right: 0;
+      background: #fff;
+      border: 1.5px solid #c5cfe0;
+      border-radius: 6px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    .dropdown-item {
+      padding: 8px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { background: #f0f6ff; }
+    .dropdown-item .item-main { font-weight: 500; color: #222; }
+    .dropdown-item .item-sub { font-size: 11px; color: #999; margin-top: 1px; }
+    .no-results { padding: 10px 12px; font-size: 13px; color: #aaa; }
+
+    /* Разделитель */
+    .divider {
+      height: 1px;
+      background: #e8ecf2;
+      margin: 4px 0 20px;
+    }
+
+    /* Кнопка сохранения */
+    .btn-save {
+      background: #4a90e2;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 28px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 4px;
+    }
+    .btn-save:hover { background: #357abd; }
+    .btn-save:disabled { background: #aac4e8; cursor: not-allowed; }
+
+    .status {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #27ae60;
+      display: none;
+    }
+    .status.error { color: #e74c3c; }
+
+    .hint {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- БЛОК: Федеральный округ -->
+  <div class="section">
+    <div class="section-label">Федеральный округ</div>
+    <div class="fo-buttons" id="foButtons"></div>
+    <div class="tags" id="foTags"></div>
+    <div class="hint">Нажмите ФО — все его регионы добавятся автоматически</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- БЛОК: Область / Регион -->
+  <div class="section">
+    <div class="section-label">Область / Регион</div>
+    <div class="search-wrapper">
+      <input type="text" id="regionInput" class="search-input" placeholder="Начните вводить регион..." autocomplete="off" />
+      <div class="dropdown" id="regionDropdown"></div>
+    </div>
+    <div class="tags" id="regionTags" style="margin-top:8px;"></div>
+    <div class="hint">При добавлении региона ФО подтянется автоматически</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- БЛОК: Населённый пункт -->
+  <div class="section">
+    <div class="section-label">Населённый пункт</div>
+    <div class="search-wrapper">
+      <input type="text" id="cityInput" class="search-input" placeholder="Начните вводить город..." autocomplete="off" />
+      <div class="dropdown" id="cityDropdown"></div>
+    </div>
+    <div class="tags" id="cityTags" style="margin-top:8px;"></div>
+    <div class="hint">При добавлении города регион и ФО подтянутся автоматически</div>
+  </div>
+
+  <button class="btn-save" id="saveBtn" disabled>Сохранить в сделку</button>
+  <div class="status" id="status"></div>
+
+</div>
+<script src="//api.bitrix24.com/api/v1/"></script>
+<script src="app.js"></script>
+</body>
+</html>

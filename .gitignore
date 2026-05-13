@@ -1,0 +1,12 @@
+node_modules/
+*.log
+
+# Секреты — не коммитим
+config.py
+
+# Данные сделок — не коммитим
+deals_*.csv
+upload_log_*.csv
+upload_errors_*.csv
+batches/
+geo_matcher*.py
