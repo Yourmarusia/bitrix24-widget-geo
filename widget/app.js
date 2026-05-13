@@ -46,14 +46,25 @@ function showError(msg) {
 }
 
 // ─── Инициализация через BX24 ─────────────────────────────────────────────
+console.log('[GeoWidget] Старт. BX24:', typeof BX24);
+
 if (typeof BX24 === 'undefined') {
   showError('BX24.js не загружен. Виджет должен открываться внутри Битрикс24.');
 } else {
 
+  const bx24Timeout = setTimeout(() => {
+    showError('BX24.init() не ответил за 6 сек — проверьте регистрацию Local App в Битрикс24.');
+  }, 6000);
+
 BX24.init(function () {
+  clearTimeout(bx24Timeout);
+  console.log('[GeoWidget] BX24.init сработал');
 
   // Получаем ID текущей сделки
-  currentDealId = BX24.placement.getOption('ID');
+  const placementInfo = BX24.placement.info();
+  currentDealId = placementInfo && placementInfo.options ? placementInfo.options.ID : null;
+  console.log('[GeoWidget] placement info:', JSON.stringify(placementInfo));
+  console.log('[GeoWidget] Deal ID:', currentDealId);
 
   // Загружаем базу городов
   fetch('../cities_russia.json')
