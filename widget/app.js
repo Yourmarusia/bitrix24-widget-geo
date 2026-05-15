@@ -11,7 +11,8 @@ let foToRegions = {};
 const ALL_FOS = ['ЦФО','СЗФО','ЮФО','СКФО','ПФО','УФО','СФО','ДФО'];
 
 // ─── Состояние выбора ────────────────────────────────────────────────────────
-let selectedFOs     = new Set();
+let selectedFOs     = new Set(); // все выбранные ФО (включая авто)
+let explicitFOs     = new Set(); // только те ФО, что нажали вручную — для фильтрации поиска
 let selectedRegions = new Set();
 let selectedCities  = new Set();
 let currentDealId   = null;
@@ -115,7 +116,10 @@ function loadExistingValues() {
       if (regionToFO[r]) selectedRegions.add(r);
     });
     districts.forEach(fo => {
-      if (ALL_FOS.includes(fo)) selectedFOs.add(fo);
+      if (ALL_FOS.includes(fo)) {
+        selectedFOs.add(fo);
+        explicitFOs.add(fo); // сохранённые ФО считаем явными
+      }
     });
 
     if (cities.length || regions.length || districts.length) {
@@ -142,12 +146,14 @@ foButtonsEl.addEventListener('click', e => {
 // ─── Добавление / удаление ФО ────────────────────────────────────────────────
 function addFO(fo) {
   selectedFOs.add(fo);
+  explicitFOs.add(fo);   // нажали вручную
   (foToRegions[fo] || []).forEach(r => selectedRegions.add(r));
   renderAll();
 }
 
 function removeFO(fo) {
   selectedFOs.delete(fo);
+  explicitFOs.delete(fo);
   renderAll();
 }
 
@@ -155,7 +161,7 @@ function removeFO(fo) {
 function addRegion(region) {
   selectedRegions.add(region);
   const fo = regionToFO[region];
-  if (fo) selectedFOs.add(fo);
+  if (fo) selectedFOs.add(fo); // авто — не попадает в explicitFOs
   renderAll();
 }
 
@@ -256,7 +262,7 @@ regionInput.addEventListener('input', () => {
   const filterRegion = r => {
     if (!r.toLowerCase().includes(q)) return false;
     if (selectedRegions.has(r)) return false;
-    if (selectedFOs.size > 0 && !selectedFOs.has(regionToFO[r])) return false;
+    if (explicitFOs.size > 0 && !explicitFOs.has(regionToFO[r])) return false;
     return true;
   };
   // Сначала те, что начинаются с введённых букв, потом остальные
@@ -299,7 +305,7 @@ cityInput.addEventListener('input', () => {
     .filter(c => {
       if (selectedCities.has(c.city)) return false;
       // если выбраны ФО — только города из этих ФО
-      if (selectedFOs.size > 0 && !selectedFOs.has(c.district)) return false;
+      if (explicitFOs.size > 0 && !explicitFOs.has(c.district)) return false;
       // если выбраны регионы — только города из этих регионов
       if (selectedRegions.size > 0 && !selectedRegions.has(c.region)) return false;
       return true;
