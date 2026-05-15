@@ -312,8 +312,6 @@ cityInput.addEventListener('input', () => {
       if (selectedCities.has(c.city)) return false;
       // если выбраны ФО — только города из этих ФО
       if (explicitFOs.size > 0 && !explicitFOs.has(c.district)) return false;
-      // фильтруем только по регионам, выбранным вручную (не авто)
-      if (explicitRegions.size > 0 && !explicitRegions.has(c.region)) return false;
       return true;
     })
     .slice(0, 30);
