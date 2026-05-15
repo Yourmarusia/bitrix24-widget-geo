@@ -13,7 +13,8 @@ const ALL_FOS = ['ЦФО','СЗФО','ЮФО','СКФО','ПФО','УФО','СФ
 // ─── Состояние выбора ────────────────────────────────────────────────────────
 let selectedFOs     = new Set(); // все выбранные ФО (включая авто)
 let explicitFOs     = new Set(); // только те ФО, что нажали вручную — для фильтрации поиска
-let selectedRegions = new Set();
+let selectedRegions = new Set(); // все выбранные регионы (включая авто)
+let explicitRegions = new Set(); // только те регионы, что выбрали вручную — для фильтрации поиска городов
 let selectedCities  = new Set();
 let currentDealId   = null;
 
@@ -113,7 +114,10 @@ function loadExistingValues() {
 
     cities.forEach(c => selectedCities.add(c));
     regions.forEach(r => {
-      if (regionToFO[r]) selectedRegions.add(r);
+      if (regionToFO[r]) {
+        selectedRegions.add(r);
+        explicitRegions.add(r);
+      }
     });
     districts.forEach(fo => {
       if (ALL_FOS.includes(fo)) {
@@ -160,6 +164,7 @@ function removeFO(fo) {
 // ─── Добавление / удаление Региона ───────────────────────────────────────────
 function addRegion(region) {
   selectedRegions.add(region);
+  explicitRegions.add(region); // выбрали вручную
   const fo = regionToFO[region];
   if (fo) selectedFOs.add(fo); // авто — не попадает в explicitFOs
   renderAll();
@@ -167,6 +172,7 @@ function addRegion(region) {
 
 function removeRegion(region) {
   selectedRegions.delete(region);
+  explicitRegions.delete(region);
   renderAll();
 }
 
@@ -306,8 +312,8 @@ cityInput.addEventListener('input', () => {
       if (selectedCities.has(c.city)) return false;
       // если выбраны ФО — только города из этих ФО
       if (explicitFOs.size > 0 && !explicitFOs.has(c.district)) return false;
-      // если выбраны регионы — только города из этих регионов
-      if (selectedRegions.size > 0 && !selectedRegions.has(c.region)) return false;
+      // фильтруем только по регионам, выбранным вручную (не авто)
+      if (explicitRegions.size > 0 && !explicitRegions.has(c.region)) return false;
       return true;
     })
     .slice(0, 30);
