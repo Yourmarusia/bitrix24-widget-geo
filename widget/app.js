@@ -151,7 +151,6 @@ foButtonsEl.addEventListener('click', e => {
 function addFO(fo) {
   selectedFOs.add(fo);
   explicitFOs.add(fo);   // нажали вручную
-  (foToRegions[fo] || []).forEach(r => selectedRegions.add(r));
   renderAll();
 }
 
