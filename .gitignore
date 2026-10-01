@@ -10,3 +10,8 @@ upload_log_*.csv
 upload_errors_*.csv
 batches/
 geo_matcher*.py
+
+# Данные сделок и документы с данными клиента - публичный репо
+*.xlsx
+*.docx
+.claude/
